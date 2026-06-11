@@ -1322,6 +1322,204 @@ fun ImageDetailScreen(
 }
 
 // ==========================================
+// SIMULATED INSTAGRAM OAUTH DIALOGUE
+// ==========================================
+@Composable
+fun InstagramOAuthDialog(
+    onDismiss: () -> Unit,
+    onAuthorize: (userId: String, username: String, accessToken: String) -> Unit
+) {
+    var selectedSandboxProfile by remember { mutableStateOf("creative_lens") }
+    var customUsername by remember { mutableStateOf("") }
+    var devMode by remember { mutableStateOf(false) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header with simulated Instagram Logo gradient
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFF833AB4), // Purple
+                                    Color(0xFFFD1D1D), // Red
+                                    Color(0xFFF77737), // Orange
+                                    Color(0xFFFCAF45)  // Yellow
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Instagram Authentication",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Instagram OAuth Service",
+                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = "HD Gallery Hub requests permission to access your Instagram Business Profile and recent media uploads.",
+                    fontSize = 11.sp,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
+                // Sandbox Controls Selection
+                Text(
+                    text = "SANDBOX DEVELOPER MODE",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Toggle between choosing a profile or entering manual info
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
+                        .padding(4.dp)
+                ) {
+                    Button(
+                        onClick = { devMode = false },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (!devMode) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            contentColor = if (!devMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+                        ),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(vertical = 4.dp),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text("Default Profiles", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = { devMode = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (devMode) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            contentColor = if (devMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+                        ),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(vertical = 4.dp),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text("Custom Handle", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (!devMode) {
+                    // Predefined profile cards
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(
+                            "creative_lens" to "Creative Photography @creative_lens (2 posts)",
+                            "urban_explorer" to "Metropolitan Streets @urban_explorer (1 post)"
+                        ).forEach { (handle, desc) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .border(
+                                        width = 2.dp,
+                                        color = if (selectedSandboxProfile == handle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .clickable { selectedSandboxProfile = handle }
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = (selectedSandboxProfile == handle),
+                                    onClick = { selectedSandboxProfile = handle }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text("@$handle", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                                    Text(desc, fontSize = 10.sp, color = MaterialTheme.colorScheme.secondary)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    OutlinedTextField(
+                        value = customUsername,
+                        onValueChange = { customUsername = it.trim().lowercase() },
+                        label = { Text("Instagram Username") },
+                        placeholder = { Text("e.g. scenic_wild") },
+                        prefix = { Text("@") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1.5f)
+                    ) {
+                        Text("Cancel")
+                    }
+
+                    Button(
+                        onClick = {
+                            val targetUsername = if (devMode) customUsername else selectedSandboxProfile
+                            if (targetUsername.isNotBlank()) {
+                                val randId = (100000..999999).random().toString()
+                                val randToken = "ig_oauth_token_${(1000..9999).random()}"
+                                onAuthorize(randId, targetUsername, randToken)
+                            }
+                        },
+                        enabled = !devMode || customUsername.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE1306C) // Instagram Pink-Red
+                        ),
+                        modifier = Modifier.weight(2f)
+                    ) {
+                        Text("Authorize Sync", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ==========================================
 // 4. USER PROFILE SCREEN (Dynamic Theme switcher, Saved stats grids)
 // ==========================================
 @Composable
@@ -1335,7 +1533,14 @@ fun UserProfileScreen(
     val myUploads by viewModel.getUploadedImages().collectAsStateWithLifecycle(emptyList<ImageEntity>())
     val mySaves by viewModel.getSavedImages().collectAsStateWithLifecycle(emptyList<ImageEntity>())
 
-    var showingBookmarksTab by remember { mutableStateOf(false) }
+    // Instagram Integration States
+    val instagramConnection by viewModel.instagramConnection.collectAsStateWithLifecycle()
+    val instagramImages by viewModel.instagramImages.collectAsStateWithLifecycle()
+    val isAutoSyncEnabled by viewModel.isAutoSyncEnabled.collectAsStateWithLifecycle()
+    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
+
+    var activeProfileTab by remember { mutableStateOf(0) } // 0 = My Uploads, 1 = Saved Photos, 2 = Instagram Synced
+    var showOAuthDialog by remember { mutableStateOf(false) }
 
     if (session == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -1466,45 +1671,377 @@ fun UserProfileScreen(
             }
         }
 
-        // Tab selection switcher between my uploads and my bookmarks
+        // ------------------------------------------------------------------
+        // INSTAGRAM AUTO SYNC HUB
+        // ------------------------------------------------------------------
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(Color(0xFF833AB4), Color(0xFFFD1D1D), Color(0xFFFCAF45))
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Instagram Auto Sync",
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Text(
+                                text = if (instagramConnection != null) "Connected on Business Channel" else "Unlinked Portfolio",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
+
+                    if (instagramConnection != null) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (isSyncing) MaterialTheme.colorScheme.primaryContainer 
+                                    else MaterialTheme.colorScheme.secondaryContainer
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isSyncing) "Syncing..." else "Connected",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSyncing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f))
+
+                if (instagramConnection == null) {
+                    // Unlinked view
+                    Text(
+                        text = "Connect your Instagram Business Profile to automatically pull and sync your creative photography directly into your hub portfolio in real-time.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 16.sp
+                    )
+
+                    Button(
+                        onClick = { showOAuthDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("connect_instagram_button"),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE1306C)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Link, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Link Instagram via OAuth", fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    // Connected view status
+                    val conn = instagramConnection!!
+                    
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ListItem(
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            headlineContent = { Text("@${conn.instagramUsername}", fontWeight = FontWeight.ExtraBold) },
+                            supportingContent = { 
+                                Text(
+                                    text = "Handshake ID: ${conn.instagramUserId} • Status: ${conn.syncStatus}", 
+                                    fontSize = 11.sp 
+                                ) 
+                            },
+                            leadingContent = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = conn.instagramUsername.take(2).uppercase(),
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f))
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Incremental Auto-Sync", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                                Text("Refreshes feed automatically in background", fontSize = 10.sp, color = MaterialTheme.colorScheme.secondary)
+                            }
+                            Switch(
+                                checked = isAutoSyncEnabled,
+                                onCheckedChange = { viewModel.isAutoSyncEnabled.value = it }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Last synced: ${viewModel.formatTimestamp(conn.lastSyncTime)}",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            IconButton(
+                                onClick = { viewModel.syncInstagram() },
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                                    .size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Sync Now",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 4.dp))
+
+                        // Sandbox Simulator Component Inside Dashboard
+                        Text(
+                            text = "Live Instagram Cloud Server Simulator",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            text = "Simulate mock posts publishing directly on Instagram's server to test background triggers, filter controls, and synchronization.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        var mockCaption by remember { mutableStateOf("") }
+                        var mockImageUrl by remember { mutableStateOf("") }
+                        var selectedHandleToPost by remember { mutableStateOf(conn.instagramUsername) }
+
+                        // Visual Selector to choose which account does the publishing (critical for testing filter safeguards!)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text("Pub. Handle:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                            listOf(conn.instagramUsername, "unknown_stranger").forEach { alternative ->
+                                Button(
+                                    onClick = { selectedHandleToPost = alternative },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (selectedHandleToPost == alternative) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                        contentColor = if (selectedHandleToPost == alternative) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(28.dp)
+                                ) {
+                                    Text("@$alternative", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+
+                        OutlinedTextField(
+                            value = mockCaption,
+                            onValueChange = { mockCaption = it },
+                            label = { Text("Simulation Caption", fontSize = 11.sp) },
+                            textStyle = LocalTextStyle.current.copy(fontSize = 12.sp),
+                            placeholder = { Text("e.g. Majestic peak sights! #wild", fontSize = 11.sp) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        // Handy quick-select image list to make testing effortless
+                        var showImageSelector by remember { mutableStateOf(false) }
+                        val presetSimulationImages = listOf(
+                            "Aurora Sky" to "https://images.unsplash.com/photo-1579033461380-adb47c3eb938?q=80&w=1200",
+                            "Cyberpunk Alley" to "https://images.unsplash.com/photo-1515621061946-eff1c2a352bd?q=80&w=1200",
+                            "Desert Sands" to "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1200",
+                            "Cozy Cabin" to "https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=1200"
+                        )
+
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = mockImageUrl,
+                                onValueChange = { mockImageUrl = it },
+                                label = { Text("Photo URL", fontSize = 11.sp) },
+                                textStyle = LocalTextStyle.current.copy(fontSize = 11.sp),
+                                trailingIcon = {
+                                    IconButton(onClick = { showImageSelector = !showImageSelector }) {
+                                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            DropdownMenu(
+                                expanded = showImageSelector,
+                                onDismissRequest = { showImageSelector = false }
+                            ) {
+                                presetSimulationImages.forEach { (name, url) ->
+                                    DropdownMenuItem(
+                                        text = { Text(name) },
+                                        onClick = {
+                                            mockImageUrl = url
+                                            showImageSelector = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                viewModel.publishSimulatedInstagramPost(selectedHandleToPost, mockCaption, mockImageUrl)
+                                mockCaption = ""
+                                mockImageUrl = ""
+                            },
+                            enabled = mockCaption.isNotBlank(),
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.CloudUpload, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Publish & Trigger Sync Checks", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Button(
+                            onClick = { viewModel.disconnectInstagram() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("disconnect_instagram_btn"),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.LinkOff, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Disconnect Instagram", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Tab selection switcher between my uploads, saved photos and Instagram synced photos
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(32.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(4.dp)
-                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Button(
-                onClick = { showingBookmarksTab = false },
+                onClick = { activeProfileTab = 0 },
                 modifier = Modifier
                     .weight(1f)
                     .testTag("profile_tab_uploads"),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (!showingBookmarksTab) MaterialTheme.colorScheme.primary else Color.Transparent,
-                    contentColor = if (!showingBookmarksTab) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.secondary
+                    containerColor = if (activeProfileTab == 0) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    contentColor = if (activeProfileTab == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.secondary
                 ),
+                contentPadding = PaddingValues(horizontal = 2.dp),
                 shape = RoundedCornerShape(32.dp)
             ) {
-                Text("My Uploads (${myUploads.size})", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text("Uploads (${myUploads.size})", fontWeight = FontWeight.Bold, fontSize = 10.sp)
             }
 
             Button(
-                onClick = { showingBookmarksTab = true },
+                onClick = { activeProfileTab = 1 },
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1.2f)
                     .testTag("profile_tab_saves"),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (showingBookmarksTab) MaterialTheme.colorScheme.primary else Color.Transparent,
-                    contentColor = if (showingBookmarksTab) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.secondary
+                    containerColor = if (activeProfileTab == 1) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    contentColor = if (activeProfileTab == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.secondary
                 ),
+                contentPadding = PaddingValues(horizontal = 2.dp),
                 shape = RoundedCornerShape(32.dp)
             ) {
-                Text("Saved Photos (${mySaves.size})", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text("Bookmarks (${mySaves.size})", fontWeight = FontWeight.Bold, fontSize = 10.sp)
+            }
+
+            Button(
+                onClick = { activeProfileTab = 2 },
+                modifier = Modifier
+                    .weight(1.2f)
+                    .testTag("profile_tab_instagram"),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (activeProfileTab == 2) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    contentColor = if (activeProfileTab == 2) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.secondary
+                ),
+                contentPadding = PaddingValues(horizontal = 2.dp),
+                shape = RoundedCornerShape(32.dp)
+            ) {
+                Text("Instagram (${instagramImages.size})", fontWeight = FontWeight.Bold, fontSize = 10.sp)
             }
         }
 
-        val displayList = if (showingBookmarksTab) mySaves else myUploads
+        val displayList = when (activeProfileTab) {
+            0 -> myUploads
+            1 -> mySaves
+            else -> instagramImages
+        }
 
         // Staggered grid representation list for profile
         if (displayList.isEmpty()) {
@@ -1515,17 +2052,30 @@ fun UserProfileScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val emptyTabIcon = when (activeProfileTab) {
+                        0 -> Icons.Default.CloudUpload
+                        1 -> Icons.Default.BookmarkBorder
+                        else -> Icons.Default.CameraAlt
+                    }
+                    val emptyTabText = when (activeProfileTab) {
+                        0 -> "You haven't uploaded images yet."
+                        1 -> "Zero bookmarks saved yet."
+                        else -> "No imports yet. Connect Instagram or publish simulation posts!"
+                    }
                     Icon(
-                        imageVector = if (showingBookmarksTab) Icons.Default.BookmarkBorder else Icons.Default.CloudUpload,
+                        imageVector = emptyTabIcon,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = if (showingBookmarksTab) "Zero bookmarks saved yet." else "You haven't uploaded images.",
+                        text = emptyTabText,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
             }
@@ -1554,6 +2104,16 @@ fun UserProfileScreen(
         }
 
         Spacer(modifier = Modifier.height(60.dp))
+    }
+
+    if (showOAuthDialog) {
+        InstagramOAuthDialog(
+            onDismiss = { showOAuthDialog = false },
+            onAuthorize = { userId, username, accessToken ->
+                viewModel.connectInstagram(userId, username, accessToken)
+                showOAuthDialog = false
+            }
+        )
     }
 }
 

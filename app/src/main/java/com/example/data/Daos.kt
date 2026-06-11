@@ -90,4 +90,24 @@ interface GalleryDao {
 
     @Query("DELETE FROM comments WHERE imageId = :imageId")
     suspend fun buildClearCommentsForImage(imageId: String)
+
+    // === Instagram Connections ===
+    @Query("SELECT * FROM instagram_connections WHERE userEmail = :email LIMIT 1")
+    fun getInstagramConnectionFlow(email: String): Flow<InstagramConnectionEntity?>
+
+    @Query("SELECT * FROM instagram_connections WHERE userEmail = :email LIMIT 1")
+    suspend fun getInstagramConnection(email: String): InstagramConnectionEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertInstagramConnection(connection: InstagramConnectionEntity)
+
+    @Query("DELETE FROM instagram_connections WHERE userEmail = :email")
+    suspend fun deleteInstagramConnection(email: String)
+
+    // === Instagram Synced Images ===
+    @Query("SELECT * FROM images WHERE authorEmail = :email AND isInstagramPost = 1 ORDER BY uploadDate DESC")
+    fun getInstagramImagesFlow(email: String): Flow<List<ImageEntity>>
+
+    @Query("DELETE FROM images WHERE authorEmail = :email AND isInstagramPost = 1")
+    suspend fun clearInstagramImages(email: String)
 }

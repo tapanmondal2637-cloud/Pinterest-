@@ -30,7 +30,9 @@ data class ImageEntity(
     val fileSize: String, // e.g., "4.2 MB"
     val likeCount: Int = 0,
     val downloadCount: Int = 0,
-    val isCustomUploaded: Boolean = false // Track true uploaded images
+    val isCustomUploaded: Boolean = false, // Track true uploaded images
+    val isInstagramPost: Boolean = false,
+    val instagramPostId: String? = null
 )
 
 @Entity(tableName = "likes", primaryKeys = ["email", "imageId"])
@@ -53,4 +55,14 @@ data class CommentEntity(
     val authorName: String,
     val commentText: String,
     val timestamp: Long
+)
+
+@Entity(tableName = "instagram_connections")
+data class InstagramConnectionEntity(
+    @PrimaryKey val userEmail: String,
+    val instagramUserId: String,
+    val instagramUsername: String,
+    val accessToken: String,
+    val lastSyncTime: Long,
+    val syncStatus: String // "Connected", "Syncing", "Failed", "Disconnected"
 )

@@ -509,4 +509,77 @@ class GalleryRepository(private val db: AppDatabase) {
             }
         }
     }
+
+    // === Instagram Connection and Sync Support ===
+    fun getInstagramConnectionFlow(email: String): kotlinx.coroutines.flow.Flow<com.example.data.InstagramConnectionEntity?> {
+        return dao.getInstagramConnectionFlow(email)
+    }
+
+    suspend fun getInstagramConnection(email: String): com.example.data.InstagramConnectionEntity? {
+        return dao.getInstagramConnection(email)
+    }
+
+    suspend fun connectInstagram(email: String, userId: String, username: String, accessToken: String) {
+        val connection = com.example.data.InstagramConnectionEntity(
+            userEmail = email,
+            instagramUserId = userId,
+            instagramUsername = username,
+            accessToken = accessToken,
+            lastSyncTime = System.currentTimeMillis(),
+            syncStatus = "Connected"
+        )
+        dao.insertInstagramConnection(connection)
+    }
+
+    suspend fun disconnectInstagram(email: String) {
+        dao.deleteInstagramConnection(email)
+        dao.clearInstagramImages(email)
+    }
+
+    fun getInstagramImagesFlow(email: String): kotlinx.coroutines.flow.Flow<List<ImageEntity>> {
+        return dao.getInstagramImagesFlow(email)
+    }
+
+    suspend fun importInstagramMediaList(email: String, username: String, mediaList: List<com.example.data.InstagramMediaData>) {
+        val currentConnection = dao.getInstagramConnection(email) ?: return
+
+        // Prevent importing content from other accounts:
+        // Filter out any media if the publisher's username does not match the actual connected Instagram username
+        val validMedia = mediaList.filter { it.username.equals(currentConnection.instagramUsername, ignoreCase = true) }
+
+        for (media in validMedia) {
+            val user = dao.getUserByEmail(email)
+            val authorName = user?.name ?: "Instagram User"
+
+            // Convert to Local Image Entity
+            val localImage = ImageEntity(
+                id = "ig_${media.id}",
+                authorEmail = email,
+                authorName = authorName,
+                title = media.caption?.take(60) ?: "Instagram Snap",
+                description = media.caption ?: "Imported photo from Instagram (@${media.username})",
+                imageUrl = media.mediaUrl,
+                category = "Art", // Categorized inside dynamic gallery tab
+                tags = "instagram,synced,external,social",
+                uploadDate = try {
+                    // Instagram ISO-8601 timestamp parse (e.g. 2016-09-28T16:12:12+0000)
+                    java.time.Instant.parse(media.timestamp).toEpochMilli()
+                } catch(e: Exception) {
+                    System.currentTimeMillis()
+                },
+                pixelSize = "1080x1080",
+                fileSize = "1.2 MB",
+                isCustomUploaded = false,
+                isInstagramPost = true,
+                instagramPostId = media.id
+            )
+            dao.insertImage(localImage)
+        }
+
+        // Update connection meta with sync status
+        dao.insertInstagramConnection(currentConnection.copy(
+            lastSyncTime = System.currentTimeMillis(),
+            syncStatus = "Connected"
+        ))
+    }
 }

@@ -11,9 +11,10 @@ import androidx.room.RoomDatabase
         ImageEntity::class,
         LikeEntity::class,
         SaveEntity::class,
-        CommentEntity::class
+        CommentEntity::class,
+        InstagramConnectionEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
