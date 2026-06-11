@@ -1,0 +1,6 @@
+{
+  "name": "HD Gallery Hub",
+  "description": "High-quality, compression-free photo sharing platform featuring categories, search, visual stats, and rich admin controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
